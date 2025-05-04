@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Détecteur Anti-Arnaque</title>
+  <style>
+    body { font-family: sans-serif; background: #f9f9f9; padding: 20px; }
+    #app { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    input, button, textarea { width: 100%; margin: 10px 0; padding: 10px; font-size: 16px; border-radius: 5px; border: 1px solid #ccc; }
+    button { background-color: #007BFF; color: white; border: none; cursor: pointer; }
+    button:hover { background-color: #0056b3; }
+    .alert { padding: 15px; border-radius: 5px; }
+    .danger { background: #ffe5e5; color: #a00; }
+    .safe { background: #e5ffe5; color: #060; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h2>Détecteur Anti-Arnaque</h2>
+    <p>Entrez une URL à vérifier :</p>
+    <input type="text" id="siteInput" placeholder="Ex: https://omraprivee.com">
+    <button onclick="verifier()">Vérifier ce site</button>
+    <div id="resultat" class="alert"></div>
+
+    <h3>Signaler un site frauduleux</h3>
+    <input type="text" id="siteSignalement" placeholder="Ex: http://arnaque-site.xyz">
+    <textarea id="raisonSignalement" placeholder="Décris pourquoi ce site est suspect..."></textarea>
+    <button onclick="signaler()">Envoyer le signalement</button>
+    <div id="confirmation" style="margin-top: 10px;"></div>
+  </div>
+
+  <script>
+    const listeNoire = ["omraprivee.com", "arnaque123.net", "fauxpaiement.biz"];
+
+    function extractDomaine(url) {
+      return url.replace(/^https?:\/\//, '').replace(/\/.*$/, '').toLowerCase();
+    }
+
+    function verifier() {
+      const input = document.getElementById("siteInput").value;
+      const domaine = extractDomaine(input);
+      const resultat = document.getElementById("resultat");
+
+      if (listeNoire.includes(domaine)) {
+        resultat.className = "alert danger";
+        resultat.textContent = `ATTENTION : ${domaine} est connu pour être frauduleux !`;
+      } else {
+        resultat.className = "alert safe";
+        resultat.textContent = `${domaine} ne figure pas dans notre base comme dangereux.`;
+      }
+    }
+
+    function signaler() {
+      const site = extractDomaine(document.getElementById("siteSignalement").value);
+      const raison = document.getElementById("raisonSignalement").value;
+      let signalements = JSON.parse(localStorage.getItem("signalements") || "[]");
+
+      signalements.push({ site, raison, date: new Date().toISOString() });
+      localStorage.setItem("signalements", JSON.stringify(signalements));
+
+      document.getElementById("confirmation").textContent = `Merci, le site ${site} a été signalé.`;
+      document.getElementById("siteSignalement").value = "";
+      document.getElementById("raisonSignalement").value = "";
+    }
+  </script>
+</body>
+</html>
